@@ -2,19 +2,15 @@
 
 
 //Constructor
-Svr::Svr(float C, float tol, int kernelType, int useLinearOptim) 
+Svr::Svr(float C, float tol, int kernelType, int useLinearOptim, vector<vector<float>> XData, vector<float> YData) 
 {
     cout << "\nConstruyendo un SVR..!\n" << endl;
 
-    GiveSizeMatrix(14, 2, this->X);
-    GiveSizeMatrix(14, 2, this->m);
-    GiveSizeMatrix(14, 2, this->n);
-    this->X = {{8,7},{4,10},{9,7},{7,10},{9,6},{4,8},{10,10},{2,7},{8,3},{7,5},{4,4},{4,6},{1,3},{2,5}};
-    // this->PrintMatrix(this->X);
+    this->X = XData;
+    this->Y = YData;
 
-    this->Y.resize(14);
-    this->Y = {1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1};
-    // this->PrintVector(this->Y);
+    GiveSizeMatrix(this->X.size(), this->X[0].size(), this->m);
+    GiveSizeMatrix(this->X.size(), this->X[0].size(), this->n);
 
 	this->FillWithCeros(this->m.size(), this->alphas);
 	this->FillWithCeros(this->m.size(), this->errors);
@@ -293,18 +289,17 @@ vector<float> Svr::ComputeW(vector<float> multipliers, vector< vector<float> > X
 	vector<float> vecByScal;
 	this->FillWithCeros(y.size(), w);
 
+	float sum = 0.0;
 	float sum1 = 0.0;
 	float sum2 = 0.0;
 
-	for (int index = 0; index < y.size(); index++) 
+	for (int index1 = 0; index1 < y.size(); index1++) 
 	{
-		sum1 += multipliers[index] * y[index] * X[index][0];
-		sum2 += multipliers[index] * y[index] * X[index][1];
+		for (int index2 = 0; index2 <X[index1].size(); index2++) 
+		{
+			w[index2] += multipliers[index1] * y[index1] * X[index1][index2];
+		}
 	}
-
-	w.push_back(sum1);
-	w.push_back(sum2);
-
 	return w;
 }
 
@@ -323,6 +318,7 @@ vector<float> Svr::VectorByScalar (vector<float> v1, float scalar)
 
 	return result;	
 }
+
 
 float Svr::FirstHeuristic() 
 {
@@ -600,14 +596,22 @@ void Svr::PrintVector(vector<float> vector)
 void Svr::PrintMatrix(vector< vector<float> > array) 
 {
 	cout << "PrintMatrix" << endl;
+	cout << "size: " << array.size() << "," << array[0].size() << endl;
 	for (int index1 = 0; index1 < array.size(); index1++) 
 	{
-		for (int index2 = 0; index2 < array[index1].size(); index2+=2) 
+		cout << "{";
+		for (int index2 = 0; index2 < array[index1].size(); index2++) 
 		{
-				cout << "{" << array[index1][index2] << ",";
-				cout << array[index1][index2+1] << "}" << ",";	
+			if (index2 == array[index1].size() -1) {
+				cout << array[index1][index2];
+			}
+			else 
+			{
+				cout << array[index1][index2] << ",";
+			}
 		}
-	}
+		cout << "}\n";
+		}
 	cout << "\n";
 }
 

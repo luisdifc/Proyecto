@@ -3,6 +3,13 @@
 
 #include <cstdlib> 
 #include <iostream>
+#include <cmath>
+#include <vector>
+#include <ctime> 
+#include<fstream>
+#include<string>
+
+#include "CSVReader.h"
 #include "Svr.h"
 
 using namespace std;
