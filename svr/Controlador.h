@@ -1,6 +1,7 @@
 #ifndef CONTROLADOR_H
 #define CONTROLADOR_H
 
+#include <cstdlib> 
 #include <iostream>
 #include "Svr.h"
 

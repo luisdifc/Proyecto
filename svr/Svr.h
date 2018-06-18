@@ -33,7 +33,7 @@ int useLinearOptim;
 //Metodos
 public:
 	//For the moment X and Y wont be parametrized for testing, but later they will
-    Svr(float C, float tol, int kernelType, int useLinearOptim, int size);
+    Svr(float C, float tol, int kernelType, int useLinearOptim);
     virtual ~Svr();
     float Output(int i);
     int TakeStep(int i1, int i2, float a2, float y2, float E2, vector<float> x2);

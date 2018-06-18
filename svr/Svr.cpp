@@ -2,25 +2,28 @@
 
 
 //Constructor
-Svr::Svr(float C, float tol, int kernelType, int useLinearOptim, int size) 
+Svr::Svr(float C, float tol, int kernelType, int useLinearOptim) 
 {
     cout << "\nConstruyendo un SVR..!\n" << endl;
 
     GiveSizeMatrix(14, 2, this->X);
+    GiveSizeMatrix(14, 2, this->m);
+    GiveSizeMatrix(14, 2, this->n);
     this->X = {{8,7},{4,10},{9,7},{7,10},{9,6},{4,8},{10,10},{2,7},{8,3},{7,5},{4,4},{4,6},{1,3},{2,5}};
-    this->PrintMatrix(this->X);
+    // this->PrintMatrix(this->X);
 
     this->Y.resize(14);
     this->Y = {1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1};
-    this->PrintVector(this->Y);
+    // this->PrintVector(this->Y);
 
-	this->FillWithCeros(size, this->alphas);
-	this->FillWithCeros(size, this->errors);
-	this->FillWithCeros(size, this->w);
+	this->FillWithCeros(this->m.size(), this->alphas);
+	this->FillWithCeros(this->m.size(), this->errors);
+	this->FillWithCeros(this->n.size(), this->w);
 
     this->b = 0;
     this->eps = 0.001;
-    this->C = C;	
+    this->C = C;
+    this->tol = tol;	
 
     this->kernelType = kernelType;
     this->useLinearOptim = useLinearOptim;
@@ -30,12 +33,13 @@ Svr::Svr(float C, float tol, int kernelType, int useLinearOptim, int size)
 //Destructor
 Svr::~Svr() 
 {
-
+	cout << "\n\nAcabe de correr con exito" << endl;
 }	
 
 
 float Svr::Output(int i) 
 {
+	cout << "Output" << endl;
 	int error = -1;
 	float sum = 0;
 
@@ -61,6 +65,7 @@ float Svr::Output(int i)
 //Try to solve the problem analitically 
 int Svr::TakeStep(int i1, int i2, float a2, float y2, float E2, vector<float> x2) 
 {
+	cout << "TakeStep" << endl;
 	//return = 0 false, return 1 = true
 
 	float a1 = 0.0;
@@ -218,6 +223,7 @@ int Svr::TakeStep(int i1, int i2, float a2, float y2, float E2, vector<float> x2
 
 float Svr::GetError(int i1) 
 {
+	cout << "GetError" << endl;
 	int error = -1;
 
 	if (0 < this->alphas[i1] && this->alphas[i1] < this->C) 
@@ -235,6 +241,7 @@ float Svr::GetError(int i1)
 
 float Svr::Kernel(vector<float> v1, vector<float> v2) 
 {
+	cout << "Kernel" << endl;
 	int error = -1;
 
 	if (this->kernelType == 1) 
@@ -248,6 +255,7 @@ float Svr::Kernel(vector<float> v1, vector<float> v2)
 
 float Svr::ComputeB (float E1, float a1, float a1New, float a2New, float k11, float k12, float k22, float y1, float y2, float a2, float E2) 
 {
+	cout << "ComputeB" << endl;
 	float b1 = 0.0;
 	float b2 = 0.0;
 	float newB = 0.0;
@@ -280,20 +288,45 @@ float Svr::ComputeB (float E1, float a1, float a1New, float a2New, float k11, fl
 
 vector<float> Svr::ComputeW(vector<float> multipliers, vector< vector<float> > X, vector<float> y) 
 {
+	cout << "ComputeW" << endl;
 	vector<float> w;
-	float sum = 0.0;
+	vector<float> vecByScal;
+	this->FillWithCeros(y.size(), w);
+
+	float sum1 = 0.0;
+	float sum2 = 0.0;
 
 	for (int index = 0; index < y.size(); index++) 
 	{
-		w = VectorSum(w, VectorByScalar(X[index], y[index]));
+		sum1 += multipliers[index] * y[index] * X[index][0];
+		sum2 += multipliers[index] * y[index] * X[index][1];
 	}
+
+	w.push_back(sum1);
+	w.push_back(sum2);
 
 	return w;
 }
 
 
+vector<float> Svr::VectorByScalar (vector<float> v1, float scalar) 
+{
+	cout << "VectorByScalar" << endl;
+	vector<float> result;
+
+	cout << "v1 size: " << v1.size() << endl;
+
+	for (int index = 0; index < v1.size(); index++) 
+	{
+		result.push_back(v1[index] * scalar);
+	}	
+
+	return result;	
+}
+
 float Svr::FirstHeuristic() 
 {
+	cout << "FirstHeuristic" << endl;
 	int numChanged = 0;
 	vector<int> nonBoundIndexes = GetNonBoundIndexes();
 	
@@ -308,6 +341,7 @@ float Svr::FirstHeuristic()
 
 float Svr::SecondHeuristic(vector<int> nonBoundIndices, float E2) 
 {
+	cout << "SecondHeuristic" << endl;
 	float i1 = -1;
 	float E1 = 0.0;
 	float step = 0.0;
@@ -334,6 +368,7 @@ float Svr::SecondHeuristic(vector<int> nonBoundIndices, float E2)
 
 vector<int> Svr::GetNonBoundIndexes() 
 {
+	cout << "GetNonBoundIndexes" << endl;
 	vector<int> result;
 	for (int index = 0; index < this->alphas.size(); index++) 
 	{
@@ -352,9 +387,10 @@ vector<int> Svr::GetNonBoundIndexes()
 
 int Svr::ExamineExample (int i2) 
 {
+	cout << "ExamineExample" << endl;
 	float y2 = this->Y[i2];
 	float a2 = this->alphas[i2];
-	vector<float> x2 = this->X[i2];
+	vector<float> x2 = this->X[i2]; //AQUI SE CAE, SEGMENTATION FAULT
 	float E2 = this->GetError(i2);
 
 	float r2 = 0.0;
@@ -424,6 +460,7 @@ int Svr::ExamineExample (int i2)
 
 void Svr::MainRoutine() 
 {
+	cout << "MainRoutine" << endl;
 	float numChanged = 0.0;
 	int examineAll = 1;
 
@@ -433,7 +470,7 @@ void Svr::MainRoutine()
 
 		if (examineAll == 1) 
 		{
-			for (int index = 0; this->m.size(); index++) 
+			for (int index = 0; index < this->m.size(); index++) 
 			{
 				numChanged += this->ExamineExample(index);
 			}
@@ -461,6 +498,7 @@ void Svr::MainRoutine()
 //Dot product between 2 vectors
 float Svr::DotProduct (std::vector<float> v1, std::vector<float> v2) 
 {
+	cout << "DotProduct" << endl;
 	float result = 0;
 
 	for (int index = 0; index < v1.size(); index++) 
@@ -472,21 +510,10 @@ float Svr::DotProduct (std::vector<float> v1, std::vector<float> v2)
 }
 
 
-vector<float> Svr::VectorByScalar (vector<float> v1, float scalar) 
-{
-	vector<float> result;
-
-	for (int index = 0; index < v1.size(); index++) 
-	{
-		result[index] = v1[index] * scalar;
-	}	
-
-	return result;	
-}
-
 
 vector<float> Svr::VectorSum(vector<float> v1, vector<float> v2) 
 {
+	cout << "VectorSum" << endl;
 	vector<float> result;
 
 	for (int index = 0; index < v1.size(); index++) 
@@ -500,6 +527,7 @@ vector<float> Svr::VectorSum(vector<float> v1, vector<float> v2)
 
 int Svr::FillWithCeros(int size, vector<float> &vector) 
 {
+	cout << "FillWithCeros" << endl;
 	for (int index = 0; index < size; index++) 
 	{
 		vector.push_back(0);
@@ -511,6 +539,7 @@ int Svr::FillWithCeros(int size, vector<float> &vector)
 
 float Svr::GetMax(float n1, float n2) 
 {
+	cout << "GetMax" << endl;
 	int error = -1;
 
 	if (n1 > n2 ) 
@@ -528,6 +557,7 @@ float Svr::GetMax(float n1, float n2)
 
 float Svr::GetMin(float n1, float n2) 
 {
+	cout << "GetMin" << endl;
 	int error = -1;
 
 	if (n1 < n2 ) 
@@ -545,6 +575,7 @@ float Svr::GetMin(float n1, float n2)
 
 int Svr::RandNumGenerator(int n1, int n2) 
 {
+	cout << "RandNumGenerator" << endl;
 	int randNum = 0;
 
 	srand((unsigned)time(0)); 
@@ -556,6 +587,7 @@ int Svr::RandNumGenerator(int n1, int n2)
 
 void Svr::PrintVector(vector<float> vector) 
 {
+	cout << "PrintVector" << endl;
 	cout << "{";
 	for (int index = 0; index < vector.size(); index++) 
 	{
@@ -567,6 +599,7 @@ void Svr::PrintVector(vector<float> vector)
 
 void Svr::PrintMatrix(vector< vector<float> > array) 
 {
+	cout << "PrintMatrix" << endl;
 	for (int index1 = 0; index1 < array.size(); index1++) 
 	{
 		for (int index2 = 0; index2 < array[index1].size(); index2+=2) 
@@ -580,6 +613,7 @@ void Svr::PrintMatrix(vector< vector<float> > array)
 
 void Svr::GiveSizeMatrix(int i, int j, vector< vector<float> > &array) 
 {
+	cout << "GiveSizeMatrix" << endl;
 	array.resize(i);
 
 	for (int index1 = 0; index1 < i; index1++) 
