@@ -43,13 +43,14 @@ public:
 
     float Kernel(vector<float> v1, vector<float> v2);
     float ComputeB (float E1, float a1, float a1New, float a2New, float k11, float k12, float k22, float y1, float y2, float a2, float E2);
-    vector<float> ComputeW(vector<float> multipliers, vector< vector<float> > X, vector<float> y);
+    void ComputeW(vector<float> multipliers, vector< vector<float> > X, vector<float> y);
     float FirstHeuristic();
     float SecondHeuristic(vector<int> nonBoundIndices, float E2);
     int ExamineExample (int i2);
     float Error(int i2);
     vector<int> GetNonBoundIndexes();
     void MainRoutine();
+    float Predict(vector<float> newX);
 
 
     float DotProduct(vector<float> v1, vector<float> v2);
