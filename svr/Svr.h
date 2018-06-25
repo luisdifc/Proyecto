@@ -51,6 +51,7 @@ public:
     vector<int> GetNonBoundIndexes();
     void MainRoutine();
     float Predict(vector<float> newX);
+    float PredictRegression(vector<float> newX);
 
 
     float DotProduct(vector<float> v1, vector<float> v2);

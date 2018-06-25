@@ -12,7 +12,7 @@ Svr::Svr(float C, float tol, int kernelType, int useLinearOptim, vector<vector<f
     GiveSizeMatrix(this->X.size(), this->X[0].size(), this->m);
     GiveSizeMatrix(this->X.size(), this->X[0].size(), this->n);
 
-	this->FillWithCeros(this->m.size(), this->alphas);
+	this->FillWithCeros(this->X.size(), this->alphas);
 	this->FillWithCeros(this->m.size(), this->errors);
 	this->FillWithCeros(this->X[0].size(), this->w);
 
@@ -496,13 +496,29 @@ float Svr::Predict(vector<float> newX)
 {
 	// cout << "Predict" << endl;
 	float newY = 0.0;
-	newY = DotProduct(newX, this->w) - this->b;
+	newY = DotProduct(newX, this->w);
 
-	return newY;
+	return newY - this->b;
 }	
 
 
-//Dot product between 2 vectors
+//ver (7.64)
+float Svr::PredictRegression(vector<float> newX) 
+{	
+	float result;
+
+	for (int index = 0; index < this->X.size(); index++) 
+	{
+		if (this->alphas[index] != 0) {
+			result += (this->alphas[index] * this->Kernel(this->X[index], newX));	
+		}
+	}
+
+	return result - this->b;
+}
+
+
+	//Dot product between 2 vectors
 float Svr::DotProduct (std::vector<float> v1, std::vector<float> v2) 
 {
 	// cout << "DotProduct" << endl;
